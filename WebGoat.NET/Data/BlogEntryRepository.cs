@@ -1,4 +1,4 @@
-﻿using WebGoatCore.Models;
+using WebGoatCore.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -32,7 +32,25 @@ namespace WebGoatCore.Data
 
         public BlogEntry GetBlogEntry(int blogEntryId)
         {
-            return _context.BlogEntries.Single(b => b.Id == blogEntryId);
+            // Vulnerable code: SQL injection
+            var sql = "SELECT TOP 1 Id FROM BlogEntries WHERE Id = " + blogEntryId;
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = sql;
+                    using (var dataReader = command.ExecuteReader())
+                    {
+                        if (dataReader.Read())
+                        {
+                            var entryId = Convert.ToInt32(dataReader["Id"]);
+                            return _context.BlogEntries.Single(b => b.Id == entryId);
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public List<BlogEntry> GetTopBlogEntries()
