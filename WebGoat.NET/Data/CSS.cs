@@ -1,11 +1,11 @@
-using System;
-using System.Web;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
-public class XSSHandler : IHttpHandler
+public class XSSHandler
 {
-    public void ProcessRequest(HttpContext ctx)
+    public async Task InvokeAsync(HttpContext context)
     {
-        ctx.Response.Write(
-            "The page \"" + ctx.Request.QueryString["page"] + "\" was not found.");
+        string page = context.Request.Query["page"];
+        await context.Response.WriteAsync($"The page \"{page}\" was not found.");
     }
 }
