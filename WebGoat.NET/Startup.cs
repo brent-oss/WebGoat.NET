@@ -40,7 +40,7 @@ namespace WebGoatCore
             NorthwindContext.Initialize(this.Configuration, env);
         }
 
-        private static string GetExecDirectory()
+        private string GetExecDirectory()
         {
             string? entryDir = null;
             string? entryLocation = Assembly.GetEntryAssembly()?.Location;
@@ -132,11 +132,11 @@ namespace WebGoatCore
             }
             else
             {
-                app.UseExceptionHandler($"/{StatusCodeController.NAME}?code=500");
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
             }
 
-            app.UseStatusCodePagesWithRedirects($"/{StatusCodeController.NAME}?code={{0}}");
-
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -144,13 +144,14 @@ namespace WebGoatCore
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSession();
+            // Register the XSSHandler middleware
+            app.UseMiddleware<XSSHandler>();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
         
