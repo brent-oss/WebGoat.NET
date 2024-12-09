@@ -1,4 +1,4 @@
-﻿using WebGoatCore.Models;
+using WebGoatCore.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -47,6 +47,14 @@ namespace WebGoatCore.Data
                 .Skip(startPosition)
                 .Take(numberOfEntries);
             return blogEntries.ToList();
+        }
+
+        // Vulnerable method added to trigger CodeQL SQL injection alert
+        public List<BlogEntry> SearchBlogEntries(string title)
+        {
+            return _context.BlogEntries
+                .FromSqlRaw($"SELECT * FROM BlogEntries WHERE Title = '{title}'")
+                .ToList();
         }
     }
 }
